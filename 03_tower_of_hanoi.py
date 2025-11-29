@@ -1,3 +1,5 @@
+import sys
+
 class HanoiVisualizer:
     def __init__(self):
         self.hanoi = None
@@ -72,7 +74,6 @@ class TowerOfHanoi:
                 self.output.append(f"Кінцевий стан: {self.towers}")
             self.output.append(self.visualizer.draw())
             self.output.append("") # Empty line for spacing
-            print("\n".join(self.output[-4:]))
 
     def solve_and_visualize(self):
         self.output = []
@@ -91,7 +92,8 @@ class TowerOfHanoi:
 
 def main():
     visualizer = HanoiVisualizer()
-    hanoi_tower = TowerOfHanoi(4, visualizer)
+    level = int(sys.argv[1]) if len(sys.argv) > 1 else 3
+    hanoi_tower = TowerOfHanoi(level, visualizer)
     print(hanoi_tower.solve_and_visualize())
 
 

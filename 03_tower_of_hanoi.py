@@ -54,7 +54,6 @@ class TowerOfHanoi:
     def run(self, n, source, target, auxiliary, ):
         if n == 1:
             self._execute_move(source, target)
-            print("")
         else:
             self.run(n - 1, source, auxiliary, target)
             self._execute_move(source, target)

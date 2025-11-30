@@ -1,24 +1,54 @@
+from __future__ import annotations
 import sys
 
-class HanoiVisualizer:
-    def __init__(self):
-        self.hanoi = None
-        self.n = None
-        self.width = None
 
-    def set_hanoi(self, hanoi):
-        self.hanoi = hanoi
-        self.n = hanoi.n
+class StackInt(list[int]):
+    def __init__(self, n: int):
+        self.__stack = [] if not n else [i for i in range(n, 0, -1)]
+
+    def is_empty(self):
+        return len(self.__stack) == 0
+
+    def push(self, item):
+        self.__stack.append(item)
+
+    def pop(self, target: StackInt ) -> int | None:
+        if not self.is_empty():
+            item = self.__stack.pop()
+            target.push(item)
+            return item
+        else:
+            print("Стек порожній")
+            return None
+
+    def __str__(self):
+        return str(self.__stack)
+
+    def __repr__(self):
+        return str(self.__stack)
+
+    def __len__(self):
+        return len(self.__stack)
+
+    def __getitem__(self, item):
+        return self.__stack[item]
+
+
+class HanoiVisualizer:
+    def __init__(self, hanoi: TowerOfHanoi, n: int):
+        self.hanoi: TowerOfHanoi = hanoi
+        self.n = n
         self.width = 2 * self.n + 2
 
     def draw(self):
         towers = self.hanoi.towers
+        tower_names = towers.keys()
         output = []
 
         # Draw towers from top to bottom
         for level in range(self.n, 0, -1):
             line = ""
-            for tower_name in ["A", "B", "C"]:
+            for tower_name in tower_names:
                 tower = towers[tower_name]
                 if len(tower) >= level:
                     disk_size = tower[level - 1]
@@ -38,18 +68,16 @@ class HanoiVisualizer:
 
 
 
-class TowerOfHanoi:
+class TowerOfHanoi(dict[str, StackInt]):
 
-    def __init__(self, n: int, visualizer: HanoiVisualizer):
+    def __init__(self, n: int):
         self.n = n
         self.towers = {
-            "A": [i for i in range(n, 0, -1)],
-            "B": [],
-            "C": [],
+            "A": StackInt(n),
+            "B": StackInt(0),
+            "C": StackInt(0),
         }
-        self.visualizer = visualizer
-        self.visualizer.set_hanoi(self)
-        self.output = []
+        self.visualizer = HanoiVisualizer(self, n)
 
     def run(self, n, source, target, auxiliary, ):
         if n == 1:
@@ -62,25 +90,22 @@ class TowerOfHanoi:
     def _execute_move(self, source, target):
         source_list = self.towers[source]
         target_list = self.towers[target]
-        if source_list:
-            disk = source_list.pop()
-            target_list.append(disk)
-            self.output.append(
+        if not source_list.is_empty():
+            disk = source_list.pop(target_list)
+            print(
                 f"Перемістити диск з {source} на {target}: {disk}"
             )
-            self.output.append(f"Проміжний стан: {self.towers}")
-            if not self.towers["A"] and not self.towers["B"]:
-                self.output.append(f"Кінцевий стан: {self.towers}")
-            self.output.append(self.visualizer.draw())
-            self.output.append("") # Empty line for spacing
+            print(f"Проміжний стан: {self.towers}")
+            if self.towers["A"].is_empty() and self.towers["B"].is_empty():
+                print(f"Кінцевий стан: {self.towers}")
+            print(self.visualizer.draw())
+            print("") # Empty line for spacing
 
     def solve_and_visualize(self):
-        self.output = []
-        self.output.append(f"Початковий стан: {self.towers}")
-        self.output.append(self.visualizer.draw())
-        self.output.append("")
+        print(f"Початковий стан: {self.towers}")
+        print(self.visualizer.draw())
+        print("")
         self.run(self.n, "A", "C", "B")
-        return "\n".join(self.output)
 
     def __str__(self):
         if not self.towers["A"] and not self.towers["B"]:
@@ -90,9 +115,8 @@ class TowerOfHanoi:
 
 
 def main():
-    visualizer = HanoiVisualizer()
     level = int(sys.argv[1]) if len(sys.argv) > 1 else 3
-    hanoi_tower = TowerOfHanoi(level, visualizer)
+    hanoi_tower = TowerOfHanoi(level)
     print(hanoi_tower.solve_and_visualize())
 
 

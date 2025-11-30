@@ -3,6 +3,26 @@ import shutil
 from pathlib import Path
 
 
+def get_unique_filename(target_dir: Path, filename: str) -> str:
+    """Генерує унікальне ім'я файлу, якщо файл з таким іменем вже існує."""
+    target_path = target_dir / filename
+    if not target_path.exists():
+        return filename
+    
+    # Розділяємо ім'я файлу та розширення
+    stem = target_path.stem
+    suffix = target_path.suffix
+    
+    # Додаємо числовий суфікс до імені файлу
+    counter = 1
+    while True:
+        new_filename = f"{stem}_{counter}{suffix}"
+        new_path = target_dir / new_filename
+        if not new_path.exists():
+            return new_filename
+        counter += 1
+
+
 def copy_and_sort_files(src: str, dst: str = "dist"):
     try:
         source_dir = Path(src)
@@ -19,8 +39,15 @@ def copy_and_sort_files(src: str, dst: str = "dist"):
                 target_dir.mkdir(parents=True, exist_ok=True)
 
                 try:
-                    shutil.copy2(item, target_dir / item.name)
-                    print(f"Copied: {item} -> {target_dir / item.name}")
+                    # Отримуємо унікальне ім'я файлу
+                    unique_filename = get_unique_filename(target_dir, item.name)
+                    target_path = target_dir / unique_filename
+
+                    shutil.copy2(item, target_path)
+                    if unique_filename != item.name:
+                        print(f"Copied: {item} -> {target_path} (renamed to avoid conflict)")
+                    else:
+                        print(f"Copied: {item} -> {target_path}")
                 except OSError as e:
                     print(f"Error copying {item}: {e}")
 
